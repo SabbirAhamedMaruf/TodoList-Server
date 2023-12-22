@@ -28,7 +28,7 @@ async function run() {
     // ! GET APIS
     // getting all todos
     app.get("/gettodo", async (req, res) => {
-      const query = {status:"created"}
+      const query = { status: "created" };
       const todosData = await todoCollection.find(query).toArray();
       res.send(todosData);
     });
@@ -40,7 +40,7 @@ async function run() {
       if (priority === "none") {
         const todosData = await todoCollection
           .find()
-          .skip(parseInt(currentPage)*10)
+          .skip(parseInt(currentPage) * 10)
           .limit(10)
           .toArray();
         res.send(todosData);
@@ -48,7 +48,7 @@ async function run() {
         const query = { priority: priority };
         const todosData = await todoCollection
           .find(query)
-          .skip(parseInt(currentPage)*10)
+          .skip(parseInt(currentPage) * 10)
           .limit(10)
           .toArray();
         res.send(todosData);
@@ -56,20 +56,26 @@ async function run() {
     });
 
     // fetching on progress todos
-    app.get("/onprogesstodo",async(req,res)=>{
-      const query = { status : "on-progress"}
-      const result = await todoCollection.find(query).toArray();
-      res.send(result)
-    }) 
-
-    // fetching on completed todos
-    app.get("/completedtask",async(req,res)=>{
-      const query = { status : "completed"}
+    app.get("/onprogesstodo", async (req, res) => {
+      const query = { status: "on-progress" };
       const result = await todoCollection.find(query).toArray();
       res.send(result);
-    }) 
+    });
 
+    // fetching on completed todos
+    app.get("/completedtask", async (req, res) => {
+      const query = { status: "completed" };
+      const result = await todoCollection.find(query).toArray();
+      res.send(result);
+    });
 
+    // get single todo data
+    app.get("/getSingleTodo", async (req, res) => {
+      const currentTodoId = req.query.id;
+      const query = { _id: new ObjectId(currentTodoId) };
+      const result = await todoCollection.findOne(query);
+      res.send(result);
+    });
 
     // ! POST APIS
     // adding todo
@@ -81,24 +87,35 @@ async function run() {
 
     // ! PATCH APIS
     // updating status of todo
-    app.patch("/updateStatus",async(req,res)=>{
+    app.patch("/updateStatus", async (req, res) => {
       const currentTodoId = req.query.id;
       const currentStatus = req.query.status;
-      const query = {_id:new ObjectId(currentTodoId)};
-      const updateTodo={
-        $set:{
-          status:currentStatus
-        }
-      }
-      const result = await todoCollection.updateOne(query,updateTodo);
+      const query = { _id: new ObjectId(currentTodoId) };
+      const updateTodo = {
+        $set: {
+          status: currentStatus,
+        },
+      };
+      const result = await todoCollection.updateOne(query, updateTodo);
       res.send(result);
-    })
+    });
 
-
-
-
-
-
+    // Update single todo data
+    app.patch("/updateSingleTodo", async (req, res) => {
+      const currentTodoId = req.query.id;
+      const currentTodoData = req.body;
+      const query = { _id: new ObjectId(currentTodoId) };
+      const updateTodoData = {
+        $set: {
+          name: currentTodoData.name,
+          description: currentTodoData.description,
+          priority: currentTodoData.priority,
+          deadline: currentTodoData.deadline,
+        },
+      };
+      const result = await todoCollection.updateOne(query, updateTodoData);
+      res.send(result);
+    });
 
     // ! DELETE APIS
     app.delete("/deletetodo", async (req, res) => {
