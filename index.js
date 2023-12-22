@@ -31,23 +31,31 @@ async function run() {
       const todosData = await todoCollection.find().toArray();
       res.send(todosData);
     });
+
     // getting todos data by pagination
     app.get("/gettodobypagination", async (req, res) => {
       const currentPage = req.query.currentPage;
       const priority = req.query.priority;
       if (priority === "none") {
-        const todosData = await todoCollection.find().toArray();
+        const todosData = await todoCollection
+          .find()
+          .skip(parseInt(currentPage)*10)
+          .limit(10)
+          .toArray();
         res.send(todosData);
       } else {
         const query = { priority: priority };
         const todosData = await todoCollection
           .find(query)
-          .skip(parseInt(currentPage))
+          .skip(parseInt(currentPage)*10)
           .limit(10)
           .toArray();
         res.send(todosData);
       }
     });
+
+
+
 
     // ! POST APIS
     // adding todo
@@ -60,13 +68,10 @@ async function run() {
     // ! DELETE APIS
     app.delete("/deletetodo", async (req, res) => {
       const currentTodoId = req.query.id;
-      const query = { _id: new ObjectId(currentTodoId)};
+      const query = { _id: new ObjectId(currentTodoId) };
       const result = await todoCollection.deleteOne(query);
       res.send(result);
     });
-
-
-
 
     // ! Loging mongodb connection
     console.log("Log: Connection established with database!");
